@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shipstream-config
+  namespace: shipstream
+data:
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_USER: shipstream
+  KAFKA_BOOTSTRAP: kafka:9092
+  REDIS_HOST: valkey
+  REDIS_PORT: "6379"
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  ORDER_SERVICE_URL: http://order-service:8080
+  SHIPMENT_SERVICE_URL: http://shipment-service:8081
+  TRACKING_SERVICE_URL: http://tracking-service:8083
+  NOTIFICATION_SERVICE_URL: http://notification-service:8084
