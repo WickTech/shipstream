@@ -1,0 +1,13 @@
+{
+  "namespace": "com.wicktech.shipstream.avro",
+  "type": "record",
+  "name": "OrderCreated",
+  "doc": "Emitted by order-service when a new order is persisted",
+  "fields": [
+    {"name": "orderId",    "type": "string", "doc": "UUID"},
+    {"name": "customerId", "type": "string"},
+    {"name": "items",      "type": "string", "doc": "JSON-encoded item list"},
+    {"name": "totalCents", "type": "long"},
+    {"name": "createdAt",  "type": "string", "doc": "ISO-8601 UTC"}
+  ]
+}

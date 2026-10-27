@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: orders
+          uri: http://${ORDER_SERVICE_HOST:localhost}:8081
+          predicates:
+            - Path=/orders/**
+        - id: shipments
+          uri: http://${SHIPMENT_SERVICE_HOST:localhost}:8082
+          predicates:
+            - Path=/shipments/**
+        - id: tracking
+          uri: http://${TRACKING_SERVICE_HOST:localhost}:8083
+          predicates:
+            - Path=/tracking/**
+        - id: notifications
+          uri: http://${NOTIFICATION_SERVICE_HOST:localhost}:8084
+          predicates:
+            - Path=/notifications/**
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true

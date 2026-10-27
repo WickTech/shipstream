@@ -1,0 +1,11 @@
+{
+  "namespace": "com.wicktech.shipstream.avro",
+  "type": "record",
+  "name": "OrderCancelled",
+  "doc": "Emitted by order-service when an order is cancelled",
+  "fields": [
+    {"name": "orderId",      "type": "string"},
+    {"name": "customerId",   "type": "string"},
+    {"name": "cancelledAt",  "type": "string", "doc": "ISO-8601 UTC"}
+  ]
+}

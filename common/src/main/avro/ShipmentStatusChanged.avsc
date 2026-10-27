@@ -1,0 +1,13 @@
+{
+  "namespace": "com.wicktech.shipstream.avro",
+  "type": "record",
+  "name": "ShipmentStatusChanged",
+  "doc": "Emitted by shipment-service on every status transition",
+  "fields": [
+    {"name": "shipmentId",  "type": "string"},
+    {"name": "orderId",     "type": "string"},
+    {"name": "oldStatus",   "type": "string"},
+    {"name": "newStatus",   "type": "string"},
+    {"name": "changedAt",   "type": "string"}
+  ]
+}

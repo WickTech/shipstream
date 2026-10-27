@@ -1,0 +1,14 @@
+{
+  "namespace": "com.wicktech.shipstream.avro",
+  "type": "record",
+  "name": "ShipmentCreated",
+  "doc": "Emitted by shipment-service when a shipment is assigned",
+  "fields": [
+    {"name": "shipmentId",         "type": "string"},
+    {"name": "orderId",            "type": "string"},
+    {"name": "carrier",            "type": "string"},
+    {"name": "trackingNumber",     "type": "string"},
+    {"name": "estimatedDelivery",  "type": ["null","string"], "default": null},
+    {"name": "createdAt",          "type": "string"}
+  ]
+}

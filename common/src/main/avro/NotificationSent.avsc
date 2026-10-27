@@ -1,0 +1,15 @@
+{
+  "namespace": "com.wicktech.shipstream.avro",
+  "type": "record",
+  "name": "NotificationSent",
+  "doc": "Emitted by notification-service after sending a stub notification",
+  "fields": [
+    {"name": "notificationId", "type": "string"},
+    {"name": "customerId",     "type": "string"},
+    {"name": "channel",        "type": "string", "doc": "EMAIL or SMS"},
+    {"name": "subject",        "type": "string"},
+    {"name": "body",           "type": "string"},
+    {"name": "sentAt",         "type": "string"},
+    {"name": "sourceEventId",  "type": "string", "doc": "Idempotency key — upstream event UUID"}
+  ]
+}

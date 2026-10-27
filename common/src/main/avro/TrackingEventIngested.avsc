@@ -1,0 +1,15 @@
+{
+  "namespace": "com.wicktech.shipstream.avro",
+  "type": "record",
+  "name": "TrackingEventIngested",
+  "doc": "Emitted by tracking-service when a carrier webhook arrives",
+  "fields": [
+    {"name": "eventId",      "type": "string"},
+    {"name": "shipmentId",   "type": "string"},
+    {"name": "carrierCode",  "type": "string"},
+    {"name": "location",     "type": ["null","string"], "default": null},
+    {"name": "description",  "type": "string"},
+    {"name": "occurredAt",   "type": "string"},
+    {"name": "ingestedAt",   "type": "string"}
+  ]
+}
