@@ -25,6 +25,9 @@ spring:
 server:
   port: ${PORT:8083}
 
+tracking:
+  webhook-secret: ${TRACKING_WEBHOOK_SECRET:}
+
 management:
   endpoints:
     web:
