@@ -18,16 +18,18 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+    listener:
+      ack-mode: manual
   data:
     redis:
-      host: ${VALKEY_HOST:localhost}
-      port: ${VALKEY_PORT:6379}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 server:
   port: ${PORT:8084}
+
+notification:
+  dedup-ttl-seconds: ${NOTIFICATION_DEDUP_TTL:86400}
 
 management:
   endpoints:
