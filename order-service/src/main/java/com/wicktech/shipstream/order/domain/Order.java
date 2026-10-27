@@ -64,7 +64,8 @@ public class Order {
     // ── mutations ─────────────────────────────────────────────────────────────
 
     public void cancel() {
-        if (status == OrderStatus.SHIPPED || status == OrderStatus.DELIVERED) {
+        if (status == OrderStatus.SHIPPED || status == OrderStatus.DELIVERED
+                || status == OrderStatus.CANCELLED) {
             throw new IllegalStateException("Cannot cancel order in status: " + status);
         }
         this.status = OrderStatus.CANCELLED;
