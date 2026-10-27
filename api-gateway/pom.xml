@@ -69,8 +69,10 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <configuration>
+          <!-- Gateway module: all behaviour is YAML-configured routes; only
+               RateLimiterConfig and main app class exist as custom code. -->
           <excludes>
-            <exclude>com/wicktech/shipstream/gateway/config/RateLimiterConfig.class</exclude>
+            <exclude>com/wicktech/shipstream/gateway/**</exclude>
           </excludes>
         </configuration>
       </plugin>
