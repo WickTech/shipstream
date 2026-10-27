@@ -11,6 +11,7 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix:
         module: [order-service, shipment-service, tracking-service, notification-service]
 
