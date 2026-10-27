@@ -1,34 +1,57 @@
 spring:
   application:
     name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
   cloud:
     gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 50
+            redis-rate-limiter.burstCapacity: 100
+            redis-rate-limiter.requestedTokens: 1
+            key-resolver: "#{@remoteAddrKeyResolver}"
       routes:
-        - id: orders
-          uri: http://${ORDER_SERVICE_HOST:localhost}:8081
+        - id: order-service
+          uri: ${ORDER_SERVICE_URL:http://localhost:8080}
           predicates:
-            - Path=/orders/**
-        - id: shipments
-          uri: http://${SHIPMENT_SERVICE_HOST:localhost}:8082
+            - Path=/api/orders/**
+          filters:
+            - StripPrefix=1
+
+        - id: shipment-service
+          uri: ${SHIPMENT_SERVICE_URL:http://localhost:8081}
           predicates:
-            - Path=/shipments/**
-        - id: tracking
-          uri: http://${TRACKING_SERVICE_HOST:localhost}:8083
+            - Path=/api/shipments/**
+          filters:
+            - StripPrefix=1
+
+        - id: tracking-service
+          uri: ${TRACKING_SERVICE_URL:http://localhost:8083}
           predicates:
-            - Path=/tracking/**
-        - id: notifications
-          uri: http://${NOTIFICATION_SERVICE_HOST:localhost}:8084
+            - Path=/api/tracking/**
+          filters:
+            - StripPrefix=1
+
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
           predicates:
-            - Path=/notifications/**
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=1
 
 server:
-  port: ${PORT:8080}
+  port: ${PORT:8090}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus,gateway
   metrics:
     export:
       prometheus:
