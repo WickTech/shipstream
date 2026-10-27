@@ -24,6 +24,10 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      timeout: 2s
+      lettuce:
+        pool:
+          enabled: false
 
 server:
   port: ${PORT:8084}

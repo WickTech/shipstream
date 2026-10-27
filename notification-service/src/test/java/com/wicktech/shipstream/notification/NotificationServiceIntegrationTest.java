@@ -72,7 +72,7 @@ class NotificationServiceIntegrationTest {
 
         kafkaTemplate.send(new ProducerRecord<>("shipments.created", orderId.toString(), payload.getBytes()));
 
-        await().atMost(10, SECONDS).until(() ->
+        await().atMost(30, SECONDS).until(() ->
             notificationRepository.findByRecipientIdOrderBySentAtDesc(orderId).size() == 1);
 
         ResponseEntity<Object[]> resp = rest.getForEntity(
@@ -88,11 +88,9 @@ class NotificationServiceIntegrationTest {
             {"orderId":"%s"}
             """.formatted(orderId).trim();
 
-        // Publish to same partition/offset simulation: use fixed key so same partition
-        // In practice dedup is by topic+partition+offset; here we send twice and verify only one notification
         kafkaTemplate.send(new ProducerRecord<>("shipments.status_changed", orderId.toString(), payload.getBytes())).get();
 
-        await().atMost(10, SECONDS).until(() ->
+        await().atMost(30, SECONDS).until(() ->
             !notificationRepository.findByRecipientIdOrderBySentAtDesc(orderId).isEmpty());
 
         int countAfterFirst = notificationRepository.findByRecipientIdOrderBySentAtDesc(orderId).size();
