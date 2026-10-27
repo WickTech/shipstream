@@ -1,6 +1,5 @@
 package com.wicktech.shipstream.order;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wicktech.shipstream.order.api.CreateOrderRequest;
 import com.wicktech.shipstream.order.api.OrderResponse;
 import com.wicktech.shipstream.order.domain.OrderStatus;
@@ -22,7 +21,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+                properties = "outbox.enabled=false")
 @Testcontainers
 class OrderServiceIntegrationTest {
 
@@ -48,7 +48,6 @@ class OrderServiceIntegrationTest {
 
     @LocalServerPort int port;
     @Autowired TestRestTemplate rest;
-    @Autowired ObjectMapper mapper;
 
     String base() { return "http://localhost:" + port; }
 
