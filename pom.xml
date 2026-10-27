@@ -42,7 +42,7 @@
     <testcontainers.version>1.20.4</testcontainers.version>
 
     <!-- Build plugins -->
-    <jacoco.version>0.8.12</jacoco.version>
+    <jacoco.version>0.8.13</jacoco.version>
     <checkstyle.version>3.6.0</checkstyle.version>
     <spotbugs.version>4.8.6.6</spotbugs.version>
     <avro-maven-plugin.version>1.12.0</avro-maven-plugin.version>
@@ -156,6 +156,7 @@
             <target>${java.version}</target>
             <compilerArgs>
               <arg>--enable-preview</arg>
+              <arg>-parameters</arg>
             </compilerArgs>
           </configuration>
         </plugin>
