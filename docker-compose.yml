@@ -62,7 +62,7 @@ services:
 
   # ─── PostgreSQL (all service schemas in one instance for local dev) ────────
   postgres:
-    image: postgres:17
+    image: postgres:18
     container_name: shipstream-postgres
     ports:
       - "5432:5432"
