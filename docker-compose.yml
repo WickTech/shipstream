@@ -48,7 +48,7 @@ services:
 
   # ─── Apicurio Schema Registry ─────────────────────────────────────────────
   apicurio:
-    image: apicurio/apicurio-registry:3.0.7
+    image: apicurio/apicurio-registry:3.3.4
     container_name: shipstream-apicurio
     ports:
       - "8090:8080"
@@ -104,7 +104,7 @@ services:
 
   # ─── Prometheus ───────────────────────────────────────────────────────────
   prometheus:
-    image: prom/prometheus:v3.3.0
+    image: prom/prometheus:v3.16.0
     container_name: shipstream-prometheus
     ports:
       - "9090:9090"
