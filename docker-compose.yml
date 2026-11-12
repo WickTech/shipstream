@@ -2,7 +2,7 @@ services:
 
   # ─── Kafka KRaft (single broker, no ZooKeeper) ────────────────────────────
   kafka:
-    image: apache/kafka:3.9.0
+    image: apache/kafka:4.3.1
     container_name: shipstream-kafka
     ports:
       - "9092:9092"
@@ -29,7 +29,7 @@ services:
 
   # ─── Kafka topic initializer ───────────────────────────────────────────────
   kafka-init:
-    image: apache/kafka:3.9.0
+    image: apache/kafka:4.3.1
     container_name: shipstream-kafka-init
     depends_on:
       kafka:
