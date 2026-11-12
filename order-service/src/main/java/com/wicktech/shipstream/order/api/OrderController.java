@@ -2,6 +2,7 @@ package com.wicktech.shipstream.order.api;
 
 import com.wicktech.shipstream.order.domain.Order;
 import com.wicktech.shipstream.order.service.OrderService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody CreateOrderRequest req) {
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest req) {
         Order order = orderService.createOrder(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(OrderResponse.from(order));
     }

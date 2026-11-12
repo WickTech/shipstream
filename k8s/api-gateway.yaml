@@ -19,9 +19,17 @@ spec:
         prometheus.io/path: /actuator/prometheus
         prometheus.io/port: "8090"
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: api-gateway
-          image: ghcr.io/wicktech/shipstream/api-gateway:latest
+          image: ghcr.io/wicktech/shipstream/api-gateway:0.1.0
           ports:
             - containerPort: 8090
           envFrom:
@@ -44,6 +52,14 @@ spec:
               port: 8090
             initialDelaySeconds: 30
             periodSeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp            # embedded server work dirs; root FS is read-only
+              mountPath: /tmp
           resources:
             requests:
               cpu: 250m
@@ -51,6 +67,10 @@ spec:
             limits:
               cpu: 500m
               memory: 1Gi
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi
 ---
 apiVersion: v1
 kind: Service
