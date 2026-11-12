@@ -18,15 +18,18 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-                properties = "tracking.webhook-secret=test-secret")
+                properties = "tracking.webhook-secret=" + TrackingServiceIntegrationTest.SECRET)
 @Testcontainers
 class TrackingServiceIntegrationTest {
+
+    static final String SECRET = "integration-test-secret-not-real";
 
     @Container
     static PostgreSQLContainer<?> postgres =
@@ -55,28 +58,36 @@ class TrackingServiceIntegrationTest {
 
     String base() { return "http://localhost:" + port; }
 
+    private ResponseEntity<String> post(String body, String timestamp, String signature) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (timestamp != null) headers.set(HmacVerifier.TIMESTAMP_HEADER, timestamp);
+        if (signature != null) headers.set(HmacVerifier.SIGNATURE_HEADER, signature);
+        return rest.exchange(base() + "/tracking/ingest", HttpMethod.POST,
+                             new HttpEntity<>(body, headers), String.class);
+    }
+
+    private ResponseEntity<String> postSigned(String body, Instant at) {
+        String ts = Long.toString(at.getEpochSecond());
+        return post(body, ts, hmacVerifier.sign(ts, body.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private String sampleBody(UUID shipmentId) throws Exception {
+        return mapper.writeValueAsString(
+            new IngestRequest(shipmentId, "UPS", null, "Test", Instant.now()));
+    }
+
     @Test
     void ingestAndTimeline() throws Exception {
         UUID shipmentId = UUID.randomUUID();
         var req = new IngestRequest(shipmentId, "FEDEX", "Chicago, IL",
                                     "Package picked up", Instant.now());
 
-        String body = mapper.writeValueAsString(req);
-        String sig  = hmacVerifier.sign("test-secret", body.getBytes());
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("X-Hub-Signature-256", sig);
-
-        ResponseEntity<TrackingEventResponse> resp = rest.exchange(
-            base() + "/tracking/ingest",
-            HttpMethod.POST,
-            new HttpEntity<>(body, headers),
-            TrackingEventResponse.class
-        );
+        ResponseEntity<String> resp = postSigned(mapper.writeValueAsString(req), Instant.now());
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(resp.getBody().shipmentId()).isEqualTo(shipmentId);
-        assertThat(resp.getBody().carrierCode()).isEqualTo("FEDEX");
+        TrackingEventResponse created = mapper.readValue(resp.getBody(), TrackingEventResponse.class);
+        assertThat(created.shipmentId()).isEqualTo(shipmentId);
+        assertThat(created.carrierCode()).isEqualTo("FEDEX");
 
         // Timeline
         ResponseEntity<TrackingEventResponse[]> timeline = rest.getForEntity(
@@ -86,21 +97,55 @@ class TrackingServiceIntegrationTest {
     }
 
     @Test
-    void ingestWithBadHmacReturns401() throws Exception {
-        var req  = new IngestRequest(UUID.randomUUID(), "UPS", null, "Test", Instant.now());
-        String body = mapper.writeValueAsString(req);
+    void unsignedRequestReturns401() throws Exception {
+        UUID shipmentId = UUID.randomUUID();
+        assertThat(post(sampleBody(shipmentId), null, null).getStatusCode())
+            .isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(post(sampleBody(shipmentId), Long.toString(Instant.now().getEpochSecond()), null)
+            .getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertNothingStored(shipmentId);
+    }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("X-Hub-Signature-256", "sha256=badbadbadbad");
+    @Test
+    void wrongSignatureReturns401() throws Exception {
+        UUID shipmentId = UUID.randomUUID();
+        String ts = Long.toString(Instant.now().getEpochSecond());
+        assertThat(post(sampleBody(shipmentId), ts, "sha256=badbadbadbad").getStatusCode())
+            .isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertNothingStored(shipmentId);
+    }
 
-        ResponseEntity<Void> resp = rest.exchange(
-            base() + "/tracking/ingest",
-            HttpMethod.POST,
-            new HttpEntity<>(body, headers),
-            Void.class
-        );
+    @Test
+    void staleTimestampReturns401() throws Exception {
+        UUID shipmentId = UUID.randomUUID();
+        // Correctly signed, but 10 minutes old (default tolerance is 5 minutes).
+        ResponseEntity<String> resp = postSigned(sampleBody(shipmentId), Instant.now().minusSeconds(600));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertNothingStored(shipmentId);
+    }
+
+    @Test
+    void futureTimestampReturns401() throws Exception {
+        UUID shipmentId = UUID.randomUUID();
+        ResponseEntity<String> resp = postSigned(sampleBody(shipmentId), Instant.now().plusSeconds(600));
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertNothingStored(shipmentId);
+    }
+
+    @Test
+    void signedButInvalidBodyReturns400() {
+        // Valid signature, but missing required fields.
+        ResponseEntity<String> resp = postSigned("{\"carrierCode\":\"UPS\"}", Instant.now());
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        ResponseEntity<String> malformed = postSigned("{not json", Instant.now());
+        assertThat(malformed.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    private void assertNothingStored(UUID shipmentId) {
+        ResponseEntity<TrackingEventResponse[]> timeline = rest.getForEntity(
+            base() + "/tracking/" + shipmentId, TrackingEventResponse[].class);
+        assertThat(timeline.getBody()).isEmpty();
     }
 
     @Test

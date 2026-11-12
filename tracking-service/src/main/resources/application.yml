@@ -26,7 +26,10 @@ server:
   port: ${PORT:8083}
 
 tracking:
+  # Required. No default on purpose: startup fails if TRACKING_WEBHOOK_SECRET is unset or blank.
   webhook-secret: ${TRACKING_WEBHOOK_SECRET:}
+  # Max clock difference between X-Shipstream-Timestamp and the server (past or future).
+  webhook-tolerance: ${TRACKING_WEBHOOK_TOLERANCE:5m}
 
 management:
   endpoints:

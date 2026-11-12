@@ -78,6 +78,21 @@ class OrderServiceIntegrationTest {
     }
 
     @Test
+    void invalidOrderIsBadRequest() {
+        var blankCustomer = new CreateOrderRequest(" ", "[]", 100L);
+        assertThat(rest.postForEntity(base() + "/orders", blankCustomer, String.class).getStatusCode())
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+
+        var negativeTotal = new CreateOrderRequest("cust-3", "[]", -1L);
+        assertThat(rest.postForEntity(base() + "/orders", negativeTotal, String.class).getStatusCode())
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+
+        var missingItems = new CreateOrderRequest("cust-3", null, 100L);
+        assertThat(rest.postForEntity(base() + "/orders", missingItems, String.class).getStatusCode())
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void cancelTwiceIsConflict() {
         var req = new CreateOrderRequest("cust-2", "[]", 500L);
         var id = rest.postForEntity(base() + "/orders", req, OrderResponse.class).getBody().orderId();
