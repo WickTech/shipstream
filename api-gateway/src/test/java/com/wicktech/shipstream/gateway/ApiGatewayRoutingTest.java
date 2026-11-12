@@ -89,4 +89,19 @@ class ApiGatewayRoutingTest {
             .exchange()
             .expectStatus().isOk();
     }
+
+    @Test
+    void gatewayActuatorEndpointIsNotExposed() {
+        webTestClient.get().uri("/actuator/gateway/routes")
+            .exchange()
+            .expectStatus().isNotFound();
+    }
+
+    @Test
+    void healthActuatorEndpointStaysExposed() {
+        // Redis runs in a Testcontainer above, so health is UP and 200 is stable here.
+        webTestClient.get().uri("/actuator/health")
+            .exchange()
+            .expectStatus().isOk();
+    }
 }
