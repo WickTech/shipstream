@@ -81,7 +81,7 @@ services:
 
   # ─── Valkey (Redis-compatible, open source) ────────────────────────────────
   valkey:
-    image: valkey/valkey:8
+    image: valkey/valkey:9
     container_name: shipstream-valkey
     ports:
       - "6379:6379"
